@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import FixItUpApp from './fixitup.jsx'
+import App from './App.jsx'
 
 // Mock window.storage API
 window.storage = {
@@ -19,6 +19,6 @@ window.storage = {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
-        <FixItUpApp />
+        <App />
     </React.StrictMode>,
 )
