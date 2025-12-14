@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Zap, Bot, Loader2 } from 'lucide-react';
+import { Zap, Bot, Loader2, Tag } from 'lucide-react';
 import { assessProjectVisibility } from '../utils/aiSimulator';
 
 export default function NewProjectModal({ onClose, onSubmit }) {
     const [formData, setFormData] = useState({
         title: '',
-        category: 'Plumbing',
-        difficulty: null, // Now set by AI
+        tags: [], // Multi-select tags
+        difficulty: null,
         description: '',
         basePoints: 0,
         failures: [],
@@ -16,13 +16,24 @@ export default function NewProjectModal({ onClose, onSubmit }) {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState(null);
 
-    const categories = ['Plumbing', 'Electrical', 'Carpentry', 'Painting', 'Flooring', 'Landscaping', 'HVAC', 'Other'];
+    // Expanded Tag List
+    const availableTags = [
+        'Plumbing', 'Electrical', 'Carpentry', 'Painting',
+        'Flooring', 'Landscaping', 'HVAC', 'Smart Home',
+        'Appliance Repair', 'Furniture Assembly', 'Cleaning',
+        'Decorating', 'Security', 'Automotive', 'Drywall',
+        'Roofing', 'Masonry', 'Windows & Doors', 'Maintenance'
+    ];
 
     const pointValues = {
+        'Trivial': 10,
         'Easy': 25,
         'Medium': 50,
+        'Tricky': 75,
         'Hard': 100,
-        'Expert': 200
+        'Sweaty': 150,
+        'Expert': 200,
+        'Legendary': 500
     };
 
     const failurePenalties = {
@@ -33,6 +44,14 @@ export default function NewProjectModal({ onClose, onSubmit }) {
         'Called professional': -20,
         'Trip to hardware store': -5,
         'Started over': -12
+    };
+
+    const toggleTag = (tag) => {
+        if (formData.tags.includes(tag)) {
+            setFormData({ ...formData, tags: formData.tags.filter(t => t !== tag) });
+        } else {
+            setFormData({ ...formData, tags: [...formData.tags, tag] });
+        }
     };
 
     const addFailure = (failure, penalty) => {
@@ -83,9 +102,13 @@ export default function NewProjectModal({ onClose, onSubmit }) {
     const handleSubmit = async () => {
         if (!formData.difficulty) return;
 
+        // Ensure at least one tag is selected (or "General")
+        const finalTags = formData.tags.length > 0 ? formData.tags : ['General'];
+
         const projectData = {
             title: formData.title,
-            category: formData.category,
+            category: finalTags[0], // Keep backward compatibility for older components if needed
+            tags: finalTags,
             difficulty: formData.difficulty,
             description: formData.description,
             failures: formData.failures,
@@ -150,7 +173,7 @@ export default function NewProjectModal({ onClose, onSubmit }) {
                             if (analysisResult) setAnalysisResult(null); // Reset AI if changed
                             if (formData.difficulty) setFormData(prev => ({ ...prev, difficulty: null }));
                         }}
-                        placeholder="e.g., Installed new door lock"
+                        placeholder="e.g., Installed new smart doorbell"
                         disabled={isAnalyzing} // Lock input during analysis
                         style={{
                             width: '100%',
@@ -163,28 +186,34 @@ export default function NewProjectModal({ onClose, onSubmit }) {
                     />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', marginBottom: '16px' }}>
-                    <div>
-                        <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#333', marginBottom: '8px' }}>
-                            Category
-                        </label>
-                        <select
-                            value={formData.category}
-                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                            style={{
-                                width: '100%',
-                                padding: '12px',
-                                borderRadius: '12px',
-                                border: '2px solid #e0e0e0',
-                                fontSize: '16px',
-                                fontFamily: 'inherit',
-                                background: 'white'
-                            }}
-                        >
-                            {categories.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
+                {/* Tag Cloud */}
+                <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: '600', color: '#333', marginBottom: '8px' }}>
+                        <Tag size={16} /> Tags (Select all that apply)
+                    </label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {availableTags.map(tag => {
+                            const isSelected = formData.tags.includes(tag);
+                            return (
+                                <button
+                                    key={tag}
+                                    onClick={() => toggleTag(tag)}
+                                    style={{
+                                        padding: '8px 16px',
+                                        borderRadius: '20px',
+                                        border: isSelected ? '2px solid #ff6b35' : '1px solid #e0e0e0',
+                                        background: isSelected ? '#fff0e6' : 'white',
+                                        color: isSelected ? '#e65100' : '#666',
+                                        fontSize: '13px',
+                                        fontWeight: isSelected ? '600' : '400',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    {tag}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 

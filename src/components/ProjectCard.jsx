@@ -24,11 +24,28 @@ export default function ProjectCard({ project, index, onShare }) {
             }}
         >
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <div>
-                    <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#333', marginBottom: '4px' }}>
+                <div style={{ flex: 1, marginRight: '12px' }}>
+                    <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#333', marginBottom: '8px' }}>
                         {project.title}
                     </h3>
-                    <p style={{ fontSize: '13px', color: '#666' }}>{project.category}</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {project.tags && project.tags.length > 0 ? (
+                            project.tags.map(tag => (
+                                <span key={tag} style={{
+                                    background: '#f5f5f5',
+                                    color: '#666',
+                                    fontSize: '11px',
+                                    padding: '2px 8px',
+                                    borderRadius: '10px',
+                                    fontWeight: '600'
+                                }}>
+                                    {tag}
+                                </span>
+                            ))
+                        ) : (
+                            <span style={{ fontSize: '13px', color: '#666' }}>{project.category}</span>
+                        )}
+                    </div>
                 </div>
                 <div style={{
                     fontSize: '24px',
@@ -36,7 +53,8 @@ export default function ProjectCard({ project, index, onShare }) {
                     color: project.points >= 0 ? '#4caf50' : '#f44336',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px'
+                    gap: '4px',
+                    alignSelf: 'flex-start'
                 }}>
                     {project.points >= 0 ? '+' : ''}{project.points}
                     <Zap size={20} fill={project.points >= 0 ? '#4caf50' : '#f44336'} />

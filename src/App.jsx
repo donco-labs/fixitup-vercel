@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Trophy, Users, Plus } from 'lucide-react';
+import { Home, Trophy, Users, Plus, Star } from 'lucide-react';
 import { storage } from './utils/storage';
 import { checkAndAwardBadges } from './utils/gamification';
 
 import NavButton from './components/NavButton';
 import NewProjectModal from './components/NewProjectModal';
+import ChangelogModal from './components/ChangelogModal';
 import HomeView from './views/HomeView';
 import LeaderboardView from './views/LeaderboardView';
 import CommunityView from './views/CommunityView';
@@ -18,6 +19,7 @@ export default function FixItUpApp() {
     const [communityPosts, setCommunityPosts] = useState([]);
     const [leaderboard, setLeaderboard] = useState([]);
     const [showNewProject, setShowNewProject] = useState(false);
+    const [showChangelog, setShowChangelog] = useState(false);
     const [loading, setLoading] = useState(true);
 
     // Load user data on mount
@@ -449,7 +451,7 @@ export default function FixItUpApp() {
             </div>
 
             {/* Main Content */}
-            <div style={{ flex: 1, overflow: 'auto', paddingBottom: '80px' }}>
+            <div style={{ flex: 1, overflow: 'auto', paddingBottom: '90px' }}>
                 {currentView === 'home' && <HomeView
                     projects={projects}
                     userProfile={userProfile}
@@ -458,6 +460,28 @@ export default function FixItUpApp() {
                 />}
                 {currentView === 'leaderboard' && <LeaderboardView leaderboard={leaderboard} currentUser={userProfile} />}
                 {currentView === 'community' && <CommunityView posts={communityPosts} onLike={likePost} />}
+
+                {/* Version Footer */}
+                <div style={{ textAlign: 'center', margin: '20px', opacity: 0.5 }}>
+                    <button
+                        onClick={() => setShowChangelog(true)}
+                        style={{
+                            background: 'none',
+                            border: '1px solid #ccc',
+                            borderRadius: '12px',
+                            padding: '4px 12px',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            color: '#666',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}
+                    >
+                        <Star size={10} /> v0.3.0-beta • What's New?
+                    </button>
+                </div>
             </div>
 
             {/* Bottom Navigation */}
@@ -486,6 +510,11 @@ export default function FixItUpApp() {
                     onClose={() => setShowNewProject(false)}
                     onSubmit={addProject}
                 />
+            )}
+
+            {/* Changelog Modal */}
+            {showChangelog && (
+                <ChangelogModal onClose={() => setShowChangelog(false)} />
             )}
 
             {/* FAB */}
