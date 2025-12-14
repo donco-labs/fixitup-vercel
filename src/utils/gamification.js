@@ -1,65 +1,35 @@
-export const checkAndAwardBadges = (profile, allProjects) => {
-    const newBadges = [...(profile.badges || [])];
-
-    // First Project badge
-    if (profile.completedProjects === 1 && !newBadges.includes('First Steps')) {
-        newBadges.push('First Steps');
-    }
-
-    // 10 Projects badge
-    if (profile.completedProjects === 10 && !newBadges.includes('Handy Helper')) {
-        newBadges.push('Handy Helper');
-    }
-
-    // 25 Projects badge
-    if (profile.completedProjects === 25 && !newBadges.includes('DIY Pro')) {
-        newBadges.push('DIY Pro');
-    }
-
-    // 50 Projects badge
-    if (profile.completedProjects === 50 && !newBadges.includes('Master Builder')) {
-        newBadges.push('Master Builder');
-    }
-
-    // Point milestones
-    if (profile.points >= 100 && !newBadges.includes('Century Club')) {
-        newBadges.push('Century Club');
-    }
-
-    if (profile.points >= 500 && !newBadges.includes('Point Powerhouse')) {
-        newBadges.push('Point Powerhouse');
-    }
-
-    if (profile.points >= 1000 && !newBadges.includes('Legendary')) {
-        newBadges.push('Legendary');
-    }
-
-    // Category expert badges (5 projects in same category)
-    const categories = {};
-    allProjects.forEach(p => {
-        categories[p.category] = (categories[p.category] || 0) + 1;
-    });
-
-    Object.entries(categories).forEach(([cat, count]) => {
-        if (count >= 5 && !newBadges.includes(`${cat} Expert`)) {
-            newBadges.push(`${cat} Expert`);
-        }
-    });
-
-    // Perfect project (no failures)
-    const lastProject = allProjects[0];
-    if (lastProject && (!lastProject.failures || lastProject.failures.length === 0) && !newBadges.includes('Flawless')) {
-        newBadges.push('Flawless');
-    }
-
-    // Completed an Expert difficulty project
-    if (lastProject && lastProject.difficulty === 'Expert' && !newBadges.includes('Expert Tackle')) {
-        newBadges.push('Expert Tackle');
-    }
-
-    return newBadges;
+const BADGES = {
+    NOVICE_FIXER: { name: 'Novice Fixer', criteria: { projects: 1 }, icon: '🔧' },
+    HOME_HERO: { name: 'Home Hero', criteria: { projects: 5 }, icon: '🦸' },
+    DIY_DYNAMO: { name: 'DIY Dynamo', criteria: { projects: 10 }, icon: '💥' },
+    RENO_ROCKSTAR: { name: 'Reno Rockstar', criteria: { projects: 20 }, icon: '🎸' }
 };
 
-export const calculateLevel = (points) => {
-    return Math.floor(points / 100) + 1;
+export const checkAndAwardBadges = (projects, userProfile) => {
+    const completedProjects = projects.filter(p => p.status === 'Completed').length;
+    const currentBadges = userProfile.badges || [];
+    const awardedBadges = [];
+
+    for (const badgeKey in BADGES) {
+        if (!currentBadges.includes(BADGES[badgeKey].name) && completedProjects >= BADGES[badgeKey].criteria.projects) {
+            awardedBadges.push(BADGES[badgeKey].name);
+        }
+    }
+
+    const updatedBadges = [...currentBadges, ...awardedBadges];
+    return { updatedBadges, awardedBadges };
+};
+
+export const BERATEMENTS = [
+    { text: "Your house is silently judging you.", points: 50 },
+    { text: "A spider has claimed your HVAC filter as territory.", points: 25 },
+    { text: "Your resale value just dropped by $0.17.", points: 10 },
+    { text: "The HOA is drafting a letter as we speak.", points: 75 },
+    { text: "Dad is disappointed in your maintenance schedule.", points: 100 },
+    { text: "Do you want ants? Because this is how you get ants.", points: 40 },
+    { text: "Your drywall is weeping soft tears of neglect.", points: 30 }
+];
+
+export const getRandomBeratement = () => {
+    return BERATEMENTS[Math.floor(Math.random() * BERATEMENTS.length)];
 };

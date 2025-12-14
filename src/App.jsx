@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Trophy, Users, Plus, Star } from 'lucide-react';
+import { Home, Trophy, Users, Plus, Star, Calendar } from 'lucide-react';
 import { storage } from './utils/storage';
-import { checkAndAwardBadges } from './utils/gamification';
+import { checkAndAwardBadges, getRandomBeratement } from './utils/gamification';
+import { calculateNextDue } from './utils/scheduling';
 
 import NavButton from './components/NavButton';
 import NewProjectModal from './components/NewProjectModal';
@@ -9,6 +10,7 @@ import ChangelogModal from './components/ChangelogModal';
 import HomeView from './views/HomeView';
 import LeaderboardView from './views/LeaderboardView';
 import CommunityView from './views/CommunityView';
+import MaintenanceView from './views/MaintenanceView';
 
 import './index.css';
 
@@ -18,6 +20,7 @@ export default function FixItUpApp() {
     const [projects, setProjects] = useState([]);
     const [communityPosts, setCommunityPosts] = useState([]);
     const [leaderboard, setLeaderboard] = useState([]);
+    const [maintenanceTasks, setMaintenanceTasks] = useState([]);
     const [showNewProject, setShowNewProject] = useState(false);
     const [showChangelog, setShowChangelog] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -27,6 +30,7 @@ export default function FixItUpApp() {
         loadUserData();
         loadCommunityData();
         loadLeaderboard();
+        loadMaintenanceData();
     }, []);
 
     const loadUserData = async () => {
@@ -91,6 +95,87 @@ export default function FixItUpApp() {
             setLeaderboard(await storage.getLeaderboard());
         } catch (error) {
             setLeaderboard([]);
+        }
+    };
+
+    const loadMaintenanceData = async () => {
+        try {
+            const tasks = await storage.getMaintenanceTasks();
+            setMaintenanceTasks(tasks);
+            checkMaintenanceBeratement(tasks);
+        } catch (error) {
+            console.error("Failed to load maintenance tasks", error);
+        }
+    };
+
+    const checkMaintenanceBeratement = (tasks) => {
+        const overdue = tasks.filter(t => new Date(t.nextDue) < new Date());
+        if (overdue.length > 0) {
+            // Slight delay so it doesn't pop immediately over loading screen
+            setTimeout(() => {
+                const count = overdue.length;
+                const beratement = getRandomBeratement();
+                // In a real app we would deduct points here
+                alert(`🚨 NEGLIGENCE DETECTED 🚨\n\nYou have ${count} overdue maintenance tasks!\n\n"${beratement.text}"\n\n(Simulated penalty: -${beratement.points} pts)`);
+            }, 1000);
+        }
+    };
+
+    const completeMaintenanceTask = async (taskId) => {
+        try {
+            const task = maintenanceTasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            // Recalculate next due date based on scheduling logic
+            const nextDue = calculateNextDue(task);
+
+            const updatedTask = {
+                ...task,
+                lastCompleted: new Date().toISOString(),
+                nextDue: nextDue
+            };
+
+            // Award points
+            const pointsToAdd = task.points || 50;
+            const newProfile = { ...userProfile, points: userProfile.points + pointsToAdd };
+
+            // Check Badges
+            // ... (Badge logic relies on projects, maybe we add badges for maintenance later)
+            // For now just update points
+
+            const updatedTasks = maintenanceTasks.map(t => t.id === taskId ? updatedTask : t);
+
+            setMaintenanceTasks(updatedTasks);
+            setUserProfile(newProfile);
+
+            await storage.saveMaintenanceTasks(updatedTasks);
+            await storage.saveProfile(newProfile);
+
+            alert(`Task Completed! +${pointsToAdd} Points 🛠️`);
+        } catch (error) {
+            console.error("Failed to complete task", error);
+        }
+    };
+
+    const addMaintenanceTask = async (taskData) => {
+        try {
+            const nextDue = calculateNextDue(taskData);
+
+            const newTask = {
+                ...taskData,
+                id: Date.now(),
+                lastCompleted: null,
+                nextDue: nextDue,
+                points: 25 // Default points for custom tasks
+            };
+
+            const updatedTasks = [...maintenanceTasks, newTask];
+            setMaintenanceTasks(updatedTasks);
+            await storage.saveMaintenanceTasks(updatedTasks);
+
+            alert('Task Scheduled! We will remind you.');
+        } catch (error) {
+            console.error("Failed to add task", error);
         }
     };
 
@@ -460,6 +545,13 @@ export default function FixItUpApp() {
                 />}
                 {currentView === 'leaderboard' && <LeaderboardView leaderboard={leaderboard} currentUser={userProfile} />}
                 {currentView === 'community' && <CommunityView posts={communityPosts} onLike={likePost} />}
+                {currentView === 'maintenance' && (
+                    <MaintenanceView
+                        tasks={maintenanceTasks}
+                        onComplete={completeMaintenanceTask}
+                        onAdd={addMaintenanceTask}
+                    />
+                )}
 
                 {/* Version Footer */}
                 <div style={{ textAlign: 'center', margin: '20px', opacity: 0.5 }}>
@@ -479,7 +571,7 @@ export default function FixItUpApp() {
                             gap: '4px'
                         }}
                     >
-                        <Star size={10} /> v0.3.0-beta • What's New?
+                        <Star size={10} /> v0.4.2 • What's New?
                     </button>
                 </div>
             </div>
@@ -500,22 +592,27 @@ export default function FixItUpApp() {
                 zIndex: 100
             }}>
                 <NavButton icon={<Home size={24} />} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')} />
+                <NavButton icon={<Calendar size={24} />} label="Schedule" active={currentView === 'maintenance'} onClick={() => setCurrentView('maintenance')} />
                 <NavButton icon={<Trophy size={24} />} label="Rankings" active={currentView === 'leaderboard'} onClick={() => setCurrentView('leaderboard')} />
                 <NavButton icon={<Users size={24} />} label="Community" active={currentView === 'community'} onClick={() => setCurrentView('community')} />
             </div>
 
             {/* New Project Modal */}
-            {showNewProject && (
-                <NewProjectModal
-                    onClose={() => setShowNewProject(false)}
-                    onSubmit={addProject}
-                />
-            )}
+            {
+                showNewProject && (
+                    <NewProjectModal
+                        onClose={() => setShowNewProject(false)}
+                        onSubmit={addProject}
+                    />
+                )
+            }
 
             {/* Changelog Modal */}
-            {showChangelog && (
-                <ChangelogModal onClose={() => setShowChangelog(false)} />
-            )}
+            {
+                showChangelog && (
+                    <ChangelogModal onClose={() => setShowChangelog(false)} />
+                )
+            }
 
             {/* FAB */}
             <button
@@ -544,6 +641,6 @@ export default function FixItUpApp() {
             >
                 <Plus size={28} />
             </button>
-        </div>
+        </div >
     );
 }

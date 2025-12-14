@@ -1,5 +1,10 @@
 import React from 'react';
-import { Sparkles, X, Tag, Zap, Smile } from 'lucide-react';
+import { Sparkles, X, Tag, Zap, Smile, Calendar, AlertTriangle, History, Box, Layout, Home } from 'lucide-react';
+import { CHANGELOG } from '../data/changelog';
+
+const IconMap = {
+    Sparkles, Tag, Zap, Smile, Calendar, AlertTriangle, History, Box, Layout, Home
+};
 
 export default function ChangelogModal({ onClose }) {
     return (
@@ -20,22 +25,25 @@ export default function ChangelogModal({ onClose }) {
                 background: 'white',
                 borderRadius: '24px',
                 width: '90%',
-                maxWidth: '400px',
-                maxHeight: '80vh',
+                maxWidth: '450px',
+                maxHeight: '85vh',
                 overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
                 boxShadow: '0 20px 50px rgba(0,0,0,0.2)'
             }}>
                 <div style={{
                     background: 'linear-gradient(135deg, #7c4dff 0%, #651fff 100%)',
                     padding: '24px',
                     color: 'white',
-                    position: 'relative'
+                    position: 'relative',
+                    flexShrink: 0
                 }}>
                     <h2 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Sparkles size={24} color="#ffd700" />
                         What's New
                     </h2>
-                    <p style={{ opacity: 0.9, fontSize: '14px' }}>Latest updates in v0.3.0-beta</p>
+                    <p style={{ opacity: 0.9, fontSize: '14px' }}>Version History</p>
 
                     <button
                         onClick={onClose}
@@ -59,46 +67,46 @@ export default function ChangelogModal({ onClose }) {
                     </button>
                 </div>
 
-                <div style={{ padding: '24px', overflowY: 'auto', maxHeight: '500px' }}>
+                <div style={{ padding: '24px', overflowY: 'auto' }}>
+                    {CHANGELOG.map((release, index) => (
+                        <div key={release.version} style={{ marginBottom: '32px', borderLeft: index !== CHANGELOG.length - 1 ? '2px solid #f0f0f0' : 'none', paddingLeft: '20px', marginLeft: '4px', position: 'relative' }}>
 
-                    {/* Feature 1 */}
-                    <div style={{ marginBottom: '20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                            <div style={{ background: '#e3f2fd', color: '#2196f3', padding: '6px', borderRadius: '8px' }}>
-                                <Zap size={20} />
-                            </div>
-                            <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#333' }}>AI Project Analysis</h3>
-                        </div>
-                        <p style={{ fontSize: '14px', color: '#666', lineHeight: '1.5', marginLeft: '36px' }}>
-                            No more guessing! Our new AI scans your project description to automatically assign points and complexity.
-                        </p>
-                    </div>
+                            {/* Timeline Dot */}
+                            <div style={{
+                                position: 'absolute',
+                                left: '-5px',
+                                top: '0',
+                                width: '12px',
+                                height: '12px',
+                                borderRadius: '50%',
+                                background: index === 0 ? '#651fff' : '#e0e0e0',
+                                border: '2px solid white'
+                            }}></div>
 
-                    {/* Feature 2 */}
-                    <div style={{ marginBottom: '20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                            <div style={{ background: '#fff3e0', color: '#ff9800', padding: '6px', borderRadius: '8px' }}>
-                                <Tag size={20} />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '12px' }}>
+                                <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#333' }}>v{release.version}</h3>
+                                <span style={{ fontSize: '12px', color: '#999', fontWeight: '600' }}>{release.date}</span>
                             </div>
-                            <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#333' }}>Multi-Tag Support</h3>
-                        </div>
-                        <p style={{ fontSize: '14px', color: '#666', lineHeight: '1.5', marginLeft: '36px' }}>
-                            Projects aren't one-dimensional. Now you can tag them with "Smart Home", "Electrical", "Assembly", and 15+ others!
-                        </p>
-                    </div>
+                            <h4 style={{ fontSize: '14px', color: '#651fff', fontWeight: '700', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                {release.title}
+                            </h4>
 
-                    {/* Feature 3 */}
-                    <div style={{ marginBottom: '20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                            <div style={{ background: '#f3e5f5', color: '#9c27b0', padding: '6px', borderRadius: '8px' }}>
-                                <Smile size={20} />
-                            </div>
-                            <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#333' }}>Whimsical Levels</h3>
+                            {release.features.map((feature, fIndex) => {
+                                const Icon = IconMap[feature.icon] || Sparkles;
+                                return (
+                                    <div key={fIndex} style={{ marginBottom: '16px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                            <Icon size={16} color={index === 0 ? '#651fff' : '#888'} />
+                                            <span style={{ fontSize: '15px', fontWeight: '700', color: '#444' }}>{feature.title}</span>
+                                        </div>
+                                        <p style={{ fontSize: '14px', color: '#666', lineHeight: '1.5', margin: 0, paddingLeft: '24px' }}>
+                                            {feature.desc}
+                                        </p>
+                                    </div>
+                                );
+                            })}
                         </div>
-                        <p style={{ fontSize: '14px', color: '#666', lineHeight: '1.5', marginLeft: '36px' }}>
-                            Added new difficulty tiers including <strong>Trivial</strong> (10 pts), <strong>Sweaty</strong> (150 pts), and the coveted <strong>Legendary</strong> (500 pts)!
-                        </p>
-                    </div>
+                    ))}
 
                     <button
                         onClick={onClose}
@@ -115,7 +123,7 @@ export default function ChangelogModal({ onClose }) {
                             marginTop: '12px'
                         }}
                     >
-                        Got it, let's build!
+                        Awesome!
                     </button>
                 </div>
             </div>
