@@ -1,8 +1,35 @@
 # FixItUp
 
-A gamified DIY home improvement tracker designed to encourage homeowners to log their repairs, earn badges, and share their wins (and failuress).
+**FixItUp** is a gamified DIY home improvement tracker designed to encourage homeowners to log their repairs, earn badges, and share their wins (and failures).
 
-## Quick Start
+It combines the utility of a maintenance scheduler with the dopamine hits of a mobile game.
+
+---
+
+## 🔥 Key Features
+
+### 🎮 Gamification
+*   **Points & Levels**: Earn points for every logged project. Level up from "Novice" to "Master Builder".
+*   **Badges**: Unlock achievements like "Handy Helper" or "Safety First".
+*   **Leaderboard**: Compete against other (simulated) DIYers.
+*   **Beratement**: Get lovingly guilt-tripped ("Dad is disappointed") if you ignore your maintenance.
+
+### 📅 Advanced Scheduling (New!)
+*   **Smart Intervals**: Schedule tasks "Every 3 Weeks", "Every 2 Years", or annually on specific dates.
+*   **Visual Calendar**: View your upcoming chores in a monthly grid.
+*   **Whimsical Events**: Automate tasks based on:
+    *   🌕 Full Moons (e.g., "Crystal Charging")
+    *   👻 Friday the 13th (e.g., "Black Cat Grooming")
+    *   🐸 Leap Days
+
+### 🛠️ Project Tracking
+*   **AI Analysis**: Simulated AI estimates difficulty and points for your projects.
+*   **Multi-Tags**: Categorize jobs (Electrical, Smart Home, Plumbing).
+*   **Failures**: Log "Epic Fails" to warn the community (and get pity points).
+
+---
+
+## 🚀 Quick Start
 
 ```bash
 # Install dependencies
@@ -16,47 +43,33 @@ App runs at: [http://localhost:5173](http://localhost:5173)
 
 ---
 
-## Project Overview
+## 📜 Version History
 
-**FixItUp** is a single-file React application (`fixitup.jsx`) that has been wrapped in a modern Vite environment for local development.
+| Version | Date | Codename | Highlights |
+|:--- |:--- |:--- |:--- |
+| **v0.4.2** | 2025-12-14 | **The Magical Calendar Update** | Whimsical Scheduling (Full Moon/Leap Day), Visual Calendar View, Week/Year Intervals. |
+| **v0.4.1** | 2025-12-14 | **Pro Scheduling** | Smart Annual Dates, Custom Interval Creation, UI Polish. |
+| **v0.4.0** | 2025-12-14 | **The Maintenance Update** | Recurring Task Logic, Negligence Penalties, Changelog History. |
+| **v0.3.0** | 2025-12-14 | **Whimsy & AI** | AI Complexity Analysis, "Sweaty" Difficulty, Multi-Tags. |
+| **v0.2.0** | 2025-12-14 | **Refactor** | Architecture Split (Components/Views), New Navigation. |
+| **v0.1.0** | 2025-12-14 | **Genesis** | Initial Launch. |
 
-### Core Features
-*   **Gamification**: Earn Points and Levels. Unlock Badges like "Handy Helper" or "Master Builder".
-*   **Project Tracking**: Log tasks with details like Category, Difficulty, and "Failures" (e.g., "Forgot tool").
-*   **Community Feed**: Share projects to a local feed.
-*   **Leaderboard**: Compare your stats against simulated users.
+---
 
-## Architecture
+## 🏗️ Architecture
 
 ### Tech Stack
 *   **React**: UI Library (Hooks-based).
 *   **Vite**: Build tool and dev server.
 *   **Lucide React**: Icon system.
+*   **Local Storage**: Data persistence (no database required).
 
-### Control Flow
-The app relies on a central `FixItUpApp` component that manages state via React Hooks:
-1.  **Initialization**: On mount, it loads user profile, projects, and feed data from storage. If no user exists, it creates a random one.
-2.  **Navigation**: Users switch between `Home` (Stats/Projects), `Rankings` (Leaderboard), and `Community` (Feed) views.
-3.  **Data Persistence**: All state changes (adding a project, liking a post) trigger an immediate write to `window.storage`.
-
-### Storage Mock
-The original component relies on a custom `window.storage` API. To make this run in a standard browser, we polyfilled this in `main.jsx`:
-*   **Intercept**: Calls to `window.storage` are intercepted.
-*   **Persist**: Data is saved to the browser's native `localStorage`.
-*   **Result**: Your profile, badges, and projects persist across page reloads.
-
-## Development
-
-### How Vite Works Here
-Vite acts as the bridge between the raw `fixitup.jsx` component and the browser:
-1.  **Transpilation**: Converts JSX to standard JavaScript on the fly.
-2.  **Resolution**: Resolves imports like `lucide-react` from `node_modules`.
-3.  **HMR**: Instantly updates the browser without a full reload when you save changes.
-
-### Execution Path
-When you run `npm run dev`:
-1.  **NPM** triggers the `vite` binary.
-2.  **Vite** starts a local server and pre-bundles dependencies.
-3.  **Browser** requests `index.html`, which requests `main.jsx`.
-4.  **Vite** compiles `main.jsx` and `fixitup.jsx` into valid JS modules.
-5.  **Browser** executes the code, initializes the storage mock, and mounts the React app.
+### Directory Structure
+```
+src/
+├── components/   # Reusable UI (NavButton, Modals, CalendarGrid)
+├── data/         # Static data (Changelog)
+├── utils/        # Logic (Storage, Gamification, Scheduling)
+├── views/        # Page Components (Home, Leaderboard, Maintenance)
+└── App.jsx       # Main Controller
+```
