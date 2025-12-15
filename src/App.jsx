@@ -37,8 +37,9 @@ export default function FixItUpApp() {
         try {
             const profile = await storage.getProfile();
 
-            // Migration: Ensure badges array exists
-            if (!profile.badges) {
+            // Migration: Ensure badges is an array
+            if (!profile.badges || !Array.isArray(profile.badges)) {
+                console.log("Fixing corrupted badges profile");
                 profile.badges = [];
                 await storage.saveProfile(profile);
             }
@@ -52,7 +53,7 @@ export default function FixItUpApp() {
 
                 // If user has projects but no badges, recalculate
                 if (loadedProjects.length > 0 && (!profile.badges || profile.badges.length === 0)) {
-                    const updatedBadges = checkAndAwardBadges(profile, loadedProjects);
+                    const { updatedBadges } = checkAndAwardBadges(loadedProjects, profile);
                     const updatedProfile = { ...profile, badges: updatedBadges };
                     setUserProfile(updatedProfile);
                     await storage.saveProfile(updatedProfile);
@@ -203,14 +204,14 @@ export default function FixItUpApp() {
                 points: newPoints,
                 completedProjects: completedCount
             };
-            const newBadges = checkAndAwardBadges(tempProfile, updatedProjects);
+            const { updatedBadges, awardedBadges } = checkAndAwardBadges(updatedProjects, tempProfile);
 
             const updatedProfile = {
                 ...userProfile,
                 points: newPoints,
                 completedProjects: completedCount,
                 level: Math.floor(newPoints / 100) + 1,
-                badges: newBadges
+                badges: updatedBadges
             };
             setUserProfile(updatedProfile);
 
@@ -222,8 +223,8 @@ export default function FixItUpApp() {
             setShowNewProject(false);
 
             // Show badge notification if new badges earned
-            if (newBadges.length > (userProfile.badges?.length || 0)) {
-                const earnedBadge = newBadges[newBadges.length - 1];
+            if (awardedBadges.length > 0) {
+                const earnedBadge = awardedBadges[awardedBadges.length - 1];
                 setTimeout(() => {
                     alert(`🏆 Badge Earned: ${earnedBadge}!`);
                 }, 500);
@@ -571,7 +572,7 @@ export default function FixItUpApp() {
                             gap: '4px'
                         }}
                     >
-                        <Star size={10} /> v0.4.2 • What's New?
+                        <Star size={10} /> v0.4.3 • What's New?
                     </button>
                 </div>
             </div>

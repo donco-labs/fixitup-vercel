@@ -47,6 +47,7 @@ App runs at: [http://localhost:5173](http://localhost:5173)
 
 | Version | Date | Codename | Highlights |
 |:--- |:--- |:--- |:--- |
+| **v0.4.3** | 2025-12-14 | **Stability Patch** | Critical fixes for Project Creation crash, Modal dismissal, and Data Sync issues. |
 | **v0.4.2** | 2025-12-14 | **The Magical Calendar Update** | Whimsical Scheduling (Full Moon/Leap Day), Visual Calendar View, Week/Year Intervals. |
 | **v0.4.1** | 2025-12-14 | **Pro Scheduling** | Smart Annual Dates, Custom Interval Creation, UI Polish. |
 | **v0.4.0** | 2025-12-14 | **The Maintenance Update** | Recurring Task Logic, Negligence Penalties, Changelog History. |

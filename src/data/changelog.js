@@ -1,5 +1,15 @@
 export const CHANGELOG = [
     {
+        version: "0.4.3",
+        date: "2025-12-14",
+        title: "Stability Patch",
+        features: [
+            { icon: "Shield", title: "Crash Fixes", desc: "Resolved a critical crash when logging projects with certain tags (e.g. Electrical)." },
+            { icon: "Database", title: "Data Recovery", desc: "Fixed a bug that hid project history. Restored missing project lists." },
+            { icon: "CheckCircle", title: "Modal Fix", desc: "Project modal now dismisses correctly after logging." }
+        ]
+    },
+    {
         version: "0.4.2",
         date: "2025-12-14",
         title: "The Magical Calendar Update",
