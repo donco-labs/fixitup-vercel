@@ -48,17 +48,38 @@ export default function FixItUpApp() {
 
             // Load projects first, then recalculate badges if needed
             try {
-                const loadedProjects = await storage.getProjects();
+                let loadedProjects = await storage.getProjects();
+
+                // Migration: Ensure all projects have a status
+                let projectsUpdated = false;
+                loadedProjects = loadedProjects.map(p => {
+                    if (!p.status) {
+                        projectsUpdated = true;
+                        return { ...p, status: 'Completed' };
+                    }
+                    return p;
+                });
+
+                if (projectsUpdated) {
+                    await storage.saveProjects(loadedProjects);
+                    console.log("Migrated projects to have status: Completed");
+                }
+
                 setProjects(loadedProjects);
 
-                // If user has projects but no badges, recalculate
-                if (loadedProjects.length > 0 && (!profile.badges || profile.badges.length === 0)) {
+                // If user has projects but no badges (or just to be safe), recalculate
+                if (loadedProjects.length > 0) {
                     const { updatedBadges } = checkAndAwardBadges(loadedProjects, profile);
-                    const updatedProfile = { ...profile, badges: updatedBadges };
-                    setUserProfile(updatedProfile);
-                    await storage.saveProfile(updatedProfile);
+
+                    // Only update if badges actually changed
+                    if (updatedBadges.length > (profile.badges || []).length) {
+                        const updatedProfile = { ...profile, badges: updatedBadges };
+                        setUserProfile(updatedProfile);
+                        await storage.saveProfile(updatedProfile);
+                    }
                 }
             } catch (error) {
+                console.error("Error loading projects:", error);
                 setProjects([]);
             }
         } catch (error) {
@@ -572,7 +593,7 @@ export default function FixItUpApp() {
                             gap: '4px'
                         }}
                     >
-                        <Star size={10} /> v0.4.3 • What's New?
+                        <Star size={10} /> v0.4.4 • What's New?
                     </button>
                 </div>
             </div>

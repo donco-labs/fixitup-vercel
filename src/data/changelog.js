@@ -1,5 +1,14 @@
 export const CHANGELOG = [
     {
+        version: "0.4.4",
+        date: "2025-12-19",
+        title: "Badge Fixes",
+        features: [
+            { icon: "Award", title: "Badges Restored", desc: "Fixed issue preventing badges from being awarded." },
+            { icon: "Shield", title: "Project Migration", desc: "Auto-healed existing projects to be eligible for badges." }
+        ]
+    },
+    {
         version: "0.4.3",
         date: "2025-12-14",
         title: "Stability Patch",

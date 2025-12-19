@@ -112,6 +112,7 @@ export default function NewProjectModal({ onClose, onSubmit }) {
             difficulty: formData.difficulty,
             description: formData.description,
             failures: formData.failures,
+            status: 'Completed',
             points: calculateTotalPoints()
         };
 
