@@ -1,5 +1,14 @@
 export const CHANGELOG = [
     {
+        version: "0.4.5",
+        date: "2025-12-23",
+        title: "Real AI Intelligence",
+        features: [
+            { icon: "Zap", title: "Smart Analysis", desc: "Switched from keyword matching to real Google Gemini AI." },
+            { icon: "Server", title: "Serverless Power", desc: "Powered by Vercel Serverless Functions for security." }
+        ]
+    },
+    {
         version: "0.4.4",
         date: "2025-12-19",
         title: "Badge Fixes",

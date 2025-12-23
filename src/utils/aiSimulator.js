@@ -1,5 +1,25 @@
 export const assessProjectVisibility = async (title, description) => {
-    // Simulate network delay to make it feel "real"
+    // Try to call the real API first
+    try {
+        const response = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ title, description }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return data;
+        } else {
+            console.warn("AI API failed, falling back to simulation.");
+        }
+    } catch (error) {
+        console.warn("AI API unavailable (dev mode?), falling back to simulation.", error);
+    }
+
+    // FALLBACK: Simulate network delay to make it feel "real"
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     const text = (title + ' ' + description).toLowerCase();

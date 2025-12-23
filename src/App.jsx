@@ -593,7 +593,7 @@ export default function FixItUpApp() {
                             gap: '4px'
                         }}
                     >
-                        <Star size={10} /> v0.4.4 • What's New?
+                        <Star size={10} /> v0.4.5 • What's New?
                     </button>
                 </div>
             </div>
