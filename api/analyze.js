@@ -47,8 +47,13 @@ export default async function handler(req) {
             headers: { 'Content-Type': 'application/json' }
         });
     } catch (error) {
-        console.error("AI Error:", error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        console.error("AI Error Details:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
+        // Return specifics in dev mode, generic in prod? For now, return detail to help debug.
+        return new Response(JSON.stringify({
+            error: error.message,
+            stack: error.stack,
+            details: error.toString()
+        }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });
