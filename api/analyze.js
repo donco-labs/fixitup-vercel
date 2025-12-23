@@ -16,8 +16,8 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: 'Missing API Key' });
         }
 
-        // Using "Gemini 2.0 Flash 001" which is confirmed available in your list
-        const modelName = 'gemini-2.0-flash-001';
+        // Using "gemini-flash-latest" alias for stability and quota safety
+        const modelName = 'gemini-flash-latest';
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
         const prompt = `
