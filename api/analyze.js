@@ -19,7 +19,8 @@ export default async function handler(req, res) {
         }
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        // gemini-pro is legacy, use gemini-1.5-flash for speed/cost or gemini-1.5-pro
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
         const prompt = `
         Analyze this DIY project and provide a difficulty rating.
