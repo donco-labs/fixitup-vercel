@@ -1,6 +1,4 @@
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
 export const config = {
     runtime: 'nodejs',
 };
@@ -12,15 +10,15 @@ export default async function handler(req, res) {
 
     try {
         const { title, description } = req.body;
+        const apiKey = process.env.GEMINI_API_KEY;
 
-        if (!process.env.GEMINI_API_KEY) {
-            console.error("Missing Gemini API Key in environment variables");
-            return res.status(500).json({ error: 'Server Configuration Error: Missing API Key' });
+        if (!apiKey) {
+            console.error("Missing Gemini API Key");
+            return res.status(500).json({ error: 'Missing API Key' });
         }
 
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        // gemini-pro is legacy, use gemini-1.5-flash for speed/cost or gemini-1.5-pro
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        // Direct REST API call to bypass library versioning issues
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
         const prompt = `
         Analyze this DIY project and provide a difficulty rating.
@@ -33,21 +31,34 @@ export default async function handler(req, res) {
         - confidence: A number between 0 and 1.
         `;
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{ text: prompt }]
+                }]
+            })
+        });
 
-        let text = response.text();
-        // Clean up markdown code blocks if present
-        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Gemini REST API Error:", errorText);
+            throw new Error(`API Request Failed: ${response.status} ${response.statusText} - ${errorText}`);
+        }
 
-        const data = JSON.parse(text);
+        const data = await response.json();
 
-        return res.status(200).json(data);
+        // Extract text from the complex response structure
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+        const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        return res.status(200).json(JSON.parse(cleanText));
+
     } catch (error) {
-        console.error("AI Error Details:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
-
+        console.error("Handler Error:", error);
         return res.status(500).json({
-            error: error.message || 'An error occurred during AI analysis',
+            error: error.message,
             details: error.toString()
         });
     }
