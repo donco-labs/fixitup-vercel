@@ -4,36 +4,59 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-    // Allow GET or POST for this debug step
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method Not Allowed' });
+    }
 
     try {
+        const { title, description } = req.body;
         const apiKey = process.env.GEMINI_API_KEY;
 
         if (!apiKey) {
             return res.status(500).json({ error: 'Missing API Key' });
         }
 
-        // DEBUG MODE: List available models
-        const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+        // Using "Gemini 2.0 Flash 001" which is confirmed available in your list
+        const modelName = 'gemini-2.0-flash-001';
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
-        console.log("Fetching models list...");
-        const response = await fetch(listUrl);
-        const data = await response.json();
+        const prompt = `
+        Analyze this DIY project and provide a difficulty rating.
+        Project: ${title}
+        Details: ${description || 'No details provided'}
 
-        if (!response.ok) {
-            return res.status(response.status).json({
-                error: "Failed to list models",
-                details: data
-            });
-        }
+        Return ONLY a JSON object with:
+        - difficulty: "Trivial" | "Easy" | "Medium" | "Tricky" | "Hard" | "Sweaty" | "Expert" | "Legendary"
+        - reasoning: A short, witty, 1-sentence explanation.
+        - confidence: A number between 0 and 1.
+        `;
 
-        // Return the full list of models to the frontend
-        return res.status(200).json({
-            debug: "Listing available models",
-            models: data.models || []
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{ text: prompt }]
+                }]
+            })
         });
 
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Gemini REST API Error:", errorText);
+            throw new Error(`API Request Failed: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+
+        const data = await response.json();
+
+        // Extract text
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+        const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        return res.status(200).json(JSON.parse(cleanText));
+
     } catch (error) {
+        console.error("Handler Error:", error);
         return res.status(500).json({
             error: error.message,
             details: error.toString()
