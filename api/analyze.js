@@ -5,19 +5,17 @@ export const config = {
     runtime: 'nodejs',
 };
 
-export default async function handler(req) {
+export default async function handler(req, res) {
     if (req.method !== 'POST') {
-        return new Response('Method Not Allowed', { status: 405 });
+        return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
     try {
-        const { title, description } = await req.json();
+        const { title, description } = req.body;
 
         if (!process.env.GEMINI_API_KEY) {
-            return new Response(JSON.stringify({ error: 'Missing API Key' }), {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' }
-            });
+            console.error("Missing Gemini API Key in environment variables");
+            return res.status(500).json({ error: 'Server Configuration Error: Missing API Key' });
         }
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -26,7 +24,7 @@ export default async function handler(req) {
         const prompt = `
         Analyze this DIY project and provide a difficulty rating.
         Project: ${title}
-        Details: ${description}
+        Details: ${description || 'No details provided'}
 
         Return ONLY a JSON object with:
         - difficulty: "Trivial" | "Easy" | "Medium" | "Tricky" | "Hard" | "Sweaty" | "Expert" | "Legendary"
@@ -43,19 +41,13 @@ export default async function handler(req) {
 
         const data = JSON.parse(text);
 
-        return new Response(JSON.stringify(data), {
-            headers: { 'Content-Type': 'application/json' }
-        });
+        return res.status(200).json(data);
     } catch (error) {
         console.error("AI Error Details:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
-        // Return specifics in dev mode, generic in prod? For now, return detail to help debug.
-        return new Response(JSON.stringify({
-            error: error.message,
-            stack: error.stack,
+
+        return res.status(500).json({
+            error: error.message || 'An error occurred during AI analysis',
             details: error.toString()
-        }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
         });
     }
 }
